@@ -35,7 +35,7 @@
   body{
     overflow-x:hidden;
     transition: padding-right .55s cubic-bezier(0.65,0,0.35,1);
-    padding-right: var(--ai-panel-mini-width); /* default minimized state */
+    padding-right: var(--ai-panel-mini-width);
   }
   body.ai-expanded{
     padding-right: var(--ai-panel-width);
@@ -53,7 +53,7 @@
     display:flex;align-items:center;justify-content:space-between;
     padding:18px 50px;
     background:transparent;
-    transition:background .3s ease, backdrop-filter .3s ease, padding .3s ease, right .55s cubic-bezier(0.65,0,0.35,1), transform .55s ease;
+    transition:background .3s ease, backdrop-filter .3s ease, padding .3s ease, right .55s cubic-bezier(0.65,0,0.35,1);
   }
   body.ai-expanded nav{ right: var(--ai-panel-width); }
   nav.scrolled{
@@ -82,7 +82,7 @@
   }
   .ai-trigger:hover{box-shadow:0 4px 16px rgba(138,43,226,0.5)}
 
-  /* ---------- AI PANEL ---------- */
+  /* ---------- AI PANEL (DESKTOP DEFAULT) ---------- */
   .ai-panel{
     position:fixed;top:0;
     right: 0;
@@ -94,7 +94,7 @@
     transition: width .55s cubic-bezier(0.65,0,0.35,1);
     display:flex;
     box-shadow:-20px 0 60px rgba(0,0,0,0.7);
-    overflow:visible; /* allow grip handle to overflow */
+    overflow:visible;
   }
   .ai-panel.expanded{
     width: var(--ai-panel-width);
@@ -363,7 +363,6 @@
   .hero-slider.minimized .slide::before{
     background: linear-gradient(90deg, rgba(10,0,20,0.85), rgba(10,0,20,0.6));
   }
-
   .slides{position:absolute;inset:0}
   .slide{
     position:absolute;inset:0;
@@ -598,7 +597,7 @@
   .modal-bg{
     position:fixed;inset:0;background:rgba(0,0,0,.85);
     display:none;align-items:center;justify-content:center;
-    z-index:1000;padding:20px;backdrop-filter:blur(8px);
+    z-index:2000;padding:20px;backdrop-filter:blur(8px);
   }
   .modal-bg.open{display:flex}
   .modal{
@@ -615,7 +614,6 @@
     transition:.2s;
   }
   .modal-close:hover{background:#000;transform:rotate(90deg)}
-
   .modal-poster{
     position:relative;width:100%;
     aspect-ratio:16/9;
@@ -686,7 +684,12 @@
   .ai-result h3{color:var(--violet-glow);margin-bottom:6px;font-size:14px;font-weight:600}
   .ai-result p{color:var(--muted);font-size:13px}
 
-  /* ---------- RESPONSIVE QUERIES ---------- */
+  footer{
+    text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;
+    border-top:1px solid var(--border);margin-top:40px;
+  }
+  footer a{color:var(--violet-glow)}
+
   @media(max-width:1100px){
     :root{
       --ai-panel-width: 70vw;
@@ -694,18 +697,21 @@
     }
   }
 
-  /* ========== MOBILE OPTIMIZATIONS (BOTTOM SHEET) ========== */
+  /* ========================================================
+     MOBILE OPTIMIZATIONS: TRUE BOTTOM SHEET UI 
+     (Completely sandboxed - does NOT affect Desktop)
+     ======================================================== */
   @media(max-width:768px){
+    /* Allow main page to be scrollable but provide space at bottom */
     body {
       padding-right: 0 !important;
-      padding-bottom: 90px; /* Space for the bottom sheet when closed */
+      padding-bottom: 22svh !important; 
     }
     body.ai-expanded {
-      padding-bottom: 90px;
-      overflow: hidden; /* Lock background scrolling when panel is open */
+      padding-right: 0 !important;
     }
-    nav { right: 0 !important; }
-    nav, nav.scrolled{padding:14px 16px}
+    
+    nav { right: 0 !important; padding:14px 16px !important; }
     .nav-links a:not(.ai-trigger){display:none}
 
     /* Hero & Card Adjustments */
@@ -739,31 +745,47 @@
     .modal-body h2 {font-size: 24px;}
     .modal-stats {gap: 12px; font-size: 12px;}
 
-    /* ========== AI PANEL BOTTOM SHEET LOGIC ========== */
+    /* ========== BOTTOM SHEET LOGIC ========== */
     .ai-panel {
       top: auto !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
       width: 100vw !important;
-      height: 90px !important; /* Minimized height so prompt is visible */
+      
+      /* Fixed height representing 70% of screen. */
+      height: 70vh !important; 
+      height: 70svh !important;
+      
+      /* Translate down so exactly 20% is visible when closed */
+      transform: translateY(calc(100% - 20vh)) !important;
+      transform: translateY(calc(100% - 20svh)) !important;
+      
       border-left: none !important;
       border-top: 1px solid var(--border) !important;
-      border-radius: 20px 20px 0 0 !important;
+      border-radius: 24px 24px 0 0 !important;
       flex-direction: column !important;
-      transition: height 0.4s cubic-bezier(0.3, 1, 0.32, 1) !important;
+      
+      /* Translate animation is flawlessly smooth, won't glitch when you scroll */
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
       box-shadow: 0 -10px 40px rgba(0,0,0,0.8) !important;
+      z-index: 1000 !important;
     }
     
     .ai-panel.expanded {
-      height: 55vh !important; /* Opens to exactly 50/55% of the screen */
-      min-height: 380px !important;
+      transform: translateY(0) !important; /* Slide all the way up to show the 70% */
     }
 
-    /* Top Grip Bar for Mobile */
+    /* Lock scroll events inside the panel when it's closed */
+    .ai-panel:not(.expanded) .ai-panel-body {
+      overflow: hidden !important;
+      touch-action: none !important;
+    }
+
+    /* Minimalist Top Grip Bar */
     .ai-grip {
       position: absolute !important;
-      top: 8px !important;
+      top: 12px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
       width: 44px !important;
@@ -774,25 +796,28 @@
       box-shadow: none !important;
       flex-direction: row !important;
     }
-    .ai-grip:hover { background: rgba(255,255,255,0.5) !important; }
-    .ai-grip-lines, .ai-grip-chev { display: none !important; }
+    .ai-grip:hover { background: rgba(255,255,255,0.4) !important; }
+    .ai-grip-lines, .ai-grip-chev { display: none !important; } /* Hide desktop icons */
 
-    /* Clean Content Layout */
-    .ai-panel-content { padding-top: 24px !important; height: 100% !important; justify-content: flex-start !important; }
-    .ai-panel-header { display: none !important; } /* Hide heavy header text on mobile */
-    .ai-panel-body { padding: 0 16px 16px 16px !important; }
+    /* Panel internal mobile formatting */
+    .ai-panel-header { display: none !important; } /* Hide heavy desktop header */
     
-    /* When closed, hide all the clutter cleanly */
-    .ai-panel:not(.expanded) .ai-panel-body { overflow: hidden !important; }
-    .ai-panel:not(.expanded) .category-block,
-    .ai-panel:not(.expanded) .prompt-hint,
-    .ai-panel:not(.expanded) .selection-bar {
-      display: none !important;
+    .ai-panel-content { 
+      padding-top: 24px !important; /* Make room for grip */
+      height: 100% !important; 
+      justify-content: flex-start !important; 
     }
-
-    /* Optimize the Prompt input for the bottom bar */
+    
+    .ai-panel-body { 
+      padding: 0 16px 16px 16px !important; 
+      flex: 1 !important;
+      overflow-y: auto !important; /* Full scrolling allowed when expanded */
+    }
+    
+    /* Input box fitting perfectly into the 20% closed state */
     .big-prompt {
       min-height: 50px !important;
+      margin-top: 4px !important;
       margin-bottom: 12px !important;
       padding: 6px 10px !important;
       border-radius: 14px !important;
@@ -805,22 +830,17 @@
     }
     .big-prompt input { font-size: 14px !important; padding: 10px 6px !important; }
     .big-prompt .btn-find { padding: 10px 16px !important; font-size: 13px !important; border-radius: 10px !important; }
-    .prompt-icon { display: none !important; } /* Hide icon to give input max space */
+    .prompt-icon { display: none !important; } /* Remove icon for more typing space */
 
     .selection-bar {
       padding: 12px 16px 20px 16px !important;
       background: var(--bg) !important;
+      flex-shrink: 0 !important;
     }
     
     .ai-panel.expanded .tab {padding: 8px 12px; font-size: 12px;}
     .ai-panel.expanded .tab .jp {font-size: 9px;}
   }
-
-  footer{
-    text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;
-    border-top:1px solid var(--border);margin-top:40px;
-  }
-  footer a{color:var(--violet-glow)}
 </style>
 </head>
 <body>
@@ -839,10 +859,10 @@
   </div>
 </nav>
 
-<!-- AI PANEL (Right Sidebar on Desktop / Bottom Sheet on Mobile) -->
+<!-- AI PANEL (Right Sidebar on Desktop / True Bottom Sheet on Mobile) -->
 <aside class="ai-panel expanded" id="ai-panel">
 
-  <!-- GRIP SLIDE BAR -->
+  <!-- GRIP HANDLE -->
   <div class="ai-grip" id="ai-grip" onclick="toggleAiPanel(event)" title="Slide to open / close">
     <div class="ai-grip-chev">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
@@ -864,7 +884,7 @@
     </div>
 
     <div class="ai-panel-body">
-      <!-- FAT AI SEARCH BAR -->
+      <!-- SEARCH INPUT -->
       <div class="big-prompt">
         <div class="prompt-icon">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
@@ -1127,6 +1147,7 @@ function toggleAiPanel(ev){
   if(panel.classList.contains('expanded')) collapseAiPanel();
   else expandAiPanel();
 }
+
 function expandAiPanel(){
   const panel = document.getElementById('ai-panel');
   if(panel.classList.contains('expanded')) return;
@@ -1137,6 +1158,7 @@ function expandAiPanel(){
     setTimeout(()=>document.getElementById('ai-prompt')?.focus(),420);
   }
 }
+
 function collapseAiPanel(){
   const panel = document.getElementById('ai-panel');
   if(!panel.classList.contains('expanded')) return;
@@ -1318,7 +1340,6 @@ async function runAiSearch(){
 
     renderRowWithMatch('search-row', resultList);
     
-    // Automatically close panel on mobile after search to show results
     if(window.innerWidth <= 768) collapseAiPanel();
 
   }catch(e){
@@ -1545,7 +1566,7 @@ window.addEventListener('scroll', () => {
   else nav.classList.remove('scrolled');
 });
 
-/* ========== CLICK AND FOCUS LOGIC (HANDLES MOBILE BOTTOM SHEET BEHAVIOR) ========== */
+/* ========== EXACT CLICK & "DEAD ZONE" LOGIC ========== */
 document.getElementById('ai-prompt').addEventListener('focus', expandAiPanel);
 
 document.addEventListener('click', (e) => {
@@ -1553,27 +1574,33 @@ document.addEventListener('click', (e) => {
   const grip  = document.getElementById('ai-grip');
   const modalOpen = document.getElementById('modal-bg').classList.contains('open');
 
-  // Ignore general clicks if the Anime Modal is open
+  // Ignore general clicks if the Anime Info Modal is open
   if(modalOpen) return;
 
-  // Let the grip element handle its own toggle separately
+  // Let the grip element handle its own toggle separately (so it doesn't double-trigger)
   if(grip && grip.contains(e.target)) return;
 
+  // If clicked anywhere INSIDE the panel boundaries
   if(panel.contains(e.target)){
-    // If clicked INSIDE the panel
+    
+    // Check if on mobile and the panel is currently open
     if(window.innerWidth <= 768 && panel.classList.contains('expanded')) {
-      // In Mobile: if they clicked an "unresponsive spot" (dead zone), close it.
-      // Interactive elements = inputs, buttons, tabs, links, grips.
-      const isInteractive = e.target.closest('input, button, a, .tab, .ai-grip');
+      
+      // Determine if they clicked an interactive piece of UI (Input, Button, Tab, etc)
+      const isInteractive = e.target.closest('input, button, a, .tab, .ai-grip, .big-prompt');
+      
+      // If they clicked the empty, unresponsive background ("dead zone"), collapse it.
       if(!isInteractive){
         collapseAiPanel();
         return;
       }
     }
-    // Expand if they clicked a valid part of the panel (like the prompt)
+    
+    // Otherwise, expand (or keep expanded)
     expandAiPanel();
-  } else {
-    // If clicked anywhere OUTSIDE the panel (the home page), collapse it
+  } 
+  // If clicked anywhere OUTSIDE the panel (e.g. the 30% visible home page at the top)
+  else {
     collapseAiPanel();
   }
 });
@@ -1581,1509 +1608,6 @@ document.addEventListener('click', (e) => {
 async function init(){
   buildTabs();
   
-  // UX logic: Start expanded on desktop, start minimized on mobile bottom sheet
-  if(window.innerWidth > 768){
-    document.body.classList.add('ai-expanded');
-  } else {
-    document.getElementById('ai-panel').classList.remove('expanded');
-    document.body.classList.remove('ai-expanded');
-  }
-
-  loadHeroSlides();
-  await wait(600);
-  await loadTrending();
-  await wait(500);
-  await loadClassics();
-  await wait(500);
-  loadGenres();
-}
-init();
-
-setInterval(()=>loadTrending(true), 10*60*1000);
-</script>
-</body>
-</html>    overflow-x:hidden;
-    transition: padding-right .55s cubic-bezier(0.65,0,0.35,1);
-    padding-right: var(--ai-panel-mini-width); /* default minimized state */
-  }
-  body.ai-expanded{
-    padding-right: var(--ai-panel-width);
-  }
-  a{color:inherit;text-decoration:none}
-  ::-webkit-scrollbar{height:6px;width:6px}
-  ::-webkit-scrollbar-thumb{background:rgba(138,43,226,0.6);border-radius:10px}
-  ::-webkit-scrollbar-track{background:transparent}
-
-  /* ---------- NAV ---------- */
-  nav{
-    position:fixed;top:0;left:0;
-    right: var(--ai-panel-mini-width);
-    z-index:100;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:18px 50px;
-    background:transparent;
-    transition:background .3s ease, backdrop-filter .3s ease, padding .3s ease, right .55s cubic-bezier(0.65,0,0.35,1), transform .55s ease;
-  }
-  body.ai-expanded nav{ right: var(--ai-panel-width); }
-  nav.scrolled{
-    background:rgba(10,0,20,0.92);
-    backdrop-filter:blur(16px);
-    border-bottom:1px solid var(--border);
-    padding:14px 50px;
-  }
-  .logo{
-    font-size:24px;font-weight:800;letter-spacing:3px;
-    background:linear-gradient(90deg,var(--violet-glow),var(--violet-2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    cursor:pointer;
-  }
-  .nav-links{display:flex;gap:30px;align-items:center}
-  .nav-links a{
-    color:rgba(245,240,255,0.75);font-size:13px;font-weight:500;
-    letter-spacing:.3px;transition:.2s;cursor:pointer;
-  }
-  .nav-links a:hover{color:#fff}
-  .ai-trigger{
-    background:linear-gradient(90deg,var(--violet),var(--violet-2));
-    color:#fff !important;padding:8px 16px;border-radius:6px;
-    display:inline-flex;align-items:center;gap:6px;
-    font-weight:600 !important;
-  }
-  .ai-trigger:hover{box-shadow:0 4px 16px rgba(138,43,226,0.5)}
-
-  /* ---------- AI PANEL ---------- */
-  .ai-panel{
-    position:fixed;top:0;
-    right: 0;
-    width: var(--ai-panel-mini-width);
-    height:100vh;
-    background:linear-gradient(180deg, #160030 0%, #0a0014 100%);
-    border-left:1px solid var(--border);
-    z-index:999;
-    transition: width .55s cubic-bezier(0.65,0,0.35,1);
-    display:flex;
-    box-shadow:-20px 0 60px rgba(0,0,0,0.7);
-    overflow:visible; /* allow grip handle to overflow */
-  }
-  .ai-panel.expanded{
-    width: var(--ai-panel-width);
-  }
-
-  /* Grip styling (Added) */
-  .ai-grip {
-    position: absolute; left: calc(var(--grip-width) * -1); top: 50%; transform: translateY(-50%);
-    width: var(--grip-width); height: 80px;
-    background: linear-gradient(180deg, var(--panel-2), var(--card));
-    border: 1px solid var(--border);
-    border-right: none;
-    border-radius: 12px 0 0 12px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    cursor: pointer; box-shadow: -6px 0 20px rgba(0,0,0,0.5); z-index: 1000;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .ai-grip:hover { background: linear-gradient(180deg, var(--violet), var(--violet-2)); border-color: var(--violet-glow); }
-  .ai-grip-lines { display: flex; flex-direction: column; gap: 3px; }
-  .ai-grip-lines span { width: 4px; height: 4px; background: rgba(255,255,255,0.5); border-radius: 50%; transition: background 0.2s; }
-  .ai-grip:hover .ai-grip-lines span { background: #fff; }
-  .ai-grip-chev svg { color: rgba(255,255,255,0.5); transition: transform 0.4s ease, color 0.2s; }
-  .ai-grip:hover .ai-grip-chev svg { color: #fff; }
-  .ai-panel.expanded .ai-grip-chev:first-child svg { transform: rotate(180deg); }
-  .ai-panel:not(.expanded) .ai-grip-chev:last-child svg { transform: rotate(180deg); }
-
-  .ai-panel-content{
-    width:100%;
-    height:100vh;
-    display:flex;flex-direction:column;
-    overflow:hidden;
-  }
-
-  .ai-panel-header{
-    padding:24px 22px 18px;
-    border-bottom:1px solid var(--border);
-    display:flex;align-items:center;justify-content:space-between;
-    flex-shrink:0;
-    gap:10px;
-    transition: padding .4s ease;
-  }
-  .ai-panel.expanded .ai-panel-header{
-    padding:32px 40px 24px;
-  }
-  .ai-panel-header-text h2{
-    font-size:16px;font-weight:800;letter-spacing:-0.3px;
-    background:linear-gradient(90deg,#fff,var(--violet-glow));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    margin-bottom:4px;
-    transition: font-size .4s ease;
-  }
-  .ai-panel.expanded .ai-panel-header-text h2{
-    font-size:26px;
-    margin-bottom:6px;
-  }
-  .ai-panel-header-text p{
-    color:var(--muted);font-size:11px;font-weight:400;
-    line-height:1.3;
-    transition: font-size .4s ease;
-  }
-  .ai-panel.expanded .ai-panel-header-text p{
-    font-size:13px;
-  }
-  .mobile-close-ai { display: none; }
-
-  .ai-panel-body{
-    flex:1;overflow-y:auto;
-    padding:18px 22px;
-    transition: padding .4s ease;
-  }
-  .ai-panel.expanded .ai-panel-body{
-    padding:28px 40px;
-  }
-
-  /* ---------- FAT AI PROMPT BAR ---------- */
-  .big-prompt{
-    background:linear-gradient(135deg, rgba(138,43,226,0.12), rgba(177,74,255,0.06));
-    border:2px solid var(--border);
-    border-radius:18px;
-    padding:10px 10px 10px 16px;
-    display:flex;align-items:center;gap:10px;
-    transition:.25s;
-    margin-bottom:18px;
-    min-height:64px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
-  }
-  .ai-panel.expanded .big-prompt{
-    border-radius:22px;
-    padding:14px 14px 14px 26px;
-    gap:14px;
-    margin-bottom:28px;
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;flex-shrink:0;
-    box-shadow:0 6px 20px rgba(138,43,226,0.5);
-    transition: width .3s ease, height .3s ease;
-  }
-  .ai-panel.expanded .big-prompt .prompt-icon{
-    width:48px;height:48px;border-radius:14px;
-  }
-  .big-prompt input{
-    flex:1;background:transparent;border:none;outline:none;
-    color:var(--text);font-size:13px;padding:14px 4px;
-    font-family:inherit;font-weight:500;min-width:0;
-    line-height:1.4;
-    transition: font-size .3s ease, padding .3s ease;
-  }
-  .ai-panel.expanded .big-prompt input{
-    font-size:18px;
-    padding:22px 4px;
-  }
-  .big-prompt input::placeholder{color:var(--muted);font-weight:400}
-  .big-prompt .btn-find{
-    background:linear-gradient(90deg,var(--violet),var(--violet-2));
-    color:#fff;border:none;border-radius:12px;
-    padding:12px 16px;font-weight:700;cursor:pointer;
-    font-size:12px;font-family:inherit;letter-spacing:.4px;
-    transition:.2s;display:inline-flex;align-items:center;gap:6px;
-    flex-shrink:0;
-    box-shadow:0 6px 20px rgba(138,43,226,0.45);
-  }
-  .ai-panel.expanded .big-prompt .btn-find{
-    border-radius:16px;
-    padding:18px 28px;
-    font-size:15px;
-    gap:8px;
-  }
-  .big-prompt .btn-find:hover{
-    box-shadow:0 8px 28px rgba(138,43,226,0.7);
-    transform:translateY(-1px);
-  }
-  .btn-find-label{ display:none; }
-  .ai-panel.expanded .btn-find-label{ display:inline; }
-
-  .prompt-hint{
-    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-    color:var(--muted);font-size:11px;
-    margin:-10px 0 18px 4px;
-    padding-left:4px;
-  }
-  .ai-panel.expanded .prompt-hint{
-    font-size:12px;
-    margin:-18px 0 24px 4px;
-    padding-left:6px;
-  }
-  .prompt-hint kbd{
-    background:rgba(255,255,255,0.08);
-    border:1px solid var(--border);
-    padding:2px 7px;border-radius:5px;
-    font-family:inherit;font-size:10.5px;font-weight:600;
-    color:var(--violet-glow);
-  }
-  .hint-extra{ display:none; }
-  .ai-panel.expanded .hint-extra{ display:inline; }
-
-  .category-block{margin-bottom:22px}
-  .category-label{
-    font-size:10px;font-weight:700;letter-spacing:2px;
-    color:var(--violet-glow);
-    text-transform:uppercase;
-    margin-bottom:12px;
-    display:flex;align-items:center;gap:10px;
-  }
-  .ai-panel.expanded .category-label{
-    font-size:11px;
-    margin-bottom:14px;
-  }
-  .category-label::after{
-    content:'';flex:1;height:1px;
-    background:linear-gradient(90deg,rgba(138,43,226,0.3),transparent);
-  }
-  .tab-group{display:flex;flex-wrap:wrap;gap:6px}
-  .ai-panel.expanded .tab-group{gap:8px}
-  .tab{
-    padding:7px 11px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid var(--border);
-    border-radius:18px;
-    font-size:11px;color:rgba(245,240,255,0.85);
-    cursor:pointer;transition:.2s;
-    font-weight:500;font-family:inherit;
-    user-select:none;
-    display:inline-flex;align-items:center;gap:4px;
-  }
-  .ai-panel.expanded .tab{
-    padding:9px 15px;
-    border-radius:22px;
-    font-size:12.5px;
-    gap:6px;
-  }
-  .tab .jp{color:var(--muted);font-size:9px;font-weight:400}
-  .ai-panel.expanded .tab .jp{font-size:10px}
-  .ai-panel:not(.expanded) .tab .jp{ display:none; }
-  .tab:hover{
-    background:rgba(138,43,226,0.15);
-    border-color:rgba(138,43,226,0.5);
-    color:#fff;
-  }
-  .tab:hover .jp{color:rgba(245,240,255,0.7)}
-  .tab.active{
-    background:linear-gradient(90deg,var(--violet),var(--violet-2));
-    border-color:var(--violet-2);
-    color:#fff;
-  }
-  .tab.active .jp{color:rgba(255,255,255,0.85)}
-
-  .selection-bar{
-    background:linear-gradient(180deg, transparent, #0a0014 30%);
-    padding:14px 22px 18px;
-    border-top:1px solid var(--border);
-    flex-shrink:0;
-    transition: padding .4s ease;
-  }
-  .ai-panel.expanded .selection-bar{
-    padding:18px 40px 24px;
-  }
-  .selection-info{
-    color:var(--muted);font-size:12px;margin-bottom:10px;
-    display:flex;justify-content:space-between;align-items:center;
-    gap:8px;
-  }
-  .ai-panel.expanded .selection-info{
-    font-size:13px;margin-bottom:12px;
-  }
-  .selection-info b{color:var(--violet-glow);font-weight:600}
-  .clear-btn{
-    background:transparent;border:none;color:var(--muted);
-    cursor:pointer;font-size:11px;font-family:inherit;
-    text-decoration:underline;
-  }
-  .ai-panel.expanded .clear-btn{font-size:12px}
-  .clear-btn:hover{color:var(--violet-glow)}
-  .apply-btn{
-    width:100%;
-    background:linear-gradient(90deg,var(--violet),var(--violet-2));
-    color:#fff;border:none;border-radius:12px;
-    padding:13px;font-weight:700;cursor:pointer;
-    font-size:13px;font-family:inherit;letter-spacing:.5px;
-    transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    box-shadow:0 6px 20px rgba(138,43,226,0.4);
-  }
-  .ai-panel.expanded .apply-btn{
-    border-radius:14px;
-    padding:18px;
-    font-size:15px;
-    gap:10px;
-  }
-  .apply-btn:hover{
-    box-shadow:0 10px 30px rgba(138,43,226,0.6);
-    transform:translateY(-1px);
-  }
-  .apply-btn-label-short{ display:inline; }
-  .apply-btn-label-long{ display:none; }
-  .ai-panel.expanded .apply-btn-label-short{ display:none; }
-  .ai-panel.expanded .apply-btn-label-long{ display:inline; }
-
-  /* ---------- HERO SLIDESHOW ---------- */
-  .hero-wrapper{ position:relative; }
-  .hero-slider{
-    position:relative;height:90vh;min-height:600px;
-    overflow:hidden;
-    transition: height .5s cubic-bezier(0.65,0,0.35,1), min-height .5s cubic-bezier(0.65,0,0.35,1);
-  }
-  .hero-slider.minimized{ height:60px; min-height:60px; }
-  .hero-slider.minimized .slide-content,
-  .hero-slider.minimized .slider-dots,
-  .hero-slider.minimized .slider-arrow{ opacity:0; pointer-events:none; }
-  .hero-slider.minimized .slide::before{
-    background: linear-gradient(90deg, rgba(10,0,20,0.85), rgba(10,0,20,0.6));
-  }
-
-  .slides{position:absolute;inset:0}
-  .slide{
-    position:absolute;inset:0;
-    background-size:cover;background-position:center;
-    opacity:0;transition:opacity 1.2s ease;
-  }
-  .slide.active{opacity:1}
-  .slide::before{
-    content:'';position:absolute;inset:0;
-    background:
-      linear-gradient(90deg, rgba(10,0,20,0.95) 0%, rgba(10,0,20,0.5) 50%, rgba(10,0,20,0.3) 100%),
-      linear-gradient(180deg, rgba(10,0,20,0.3) 0%, rgba(10,0,20,0.4) 60%, var(--bg) 100%);
-    transition: background .4s ease;
-  }
-  .slide-content{
-    position:relative;z-index:2;
-    height:100%;display:flex;flex-direction:column;justify-content:center;
-    padding:0 50px 0 90px;max-width:780px;
-    transition: opacity .3s ease;
-  }
-  .slide-badge{
-    display:inline-block;
-    background:rgba(138,43,226,0.2);
-    border:1px solid rgba(138,43,226,0.5);
-    color:var(--violet-glow);
-    padding:5px 12px;border-radius:4px;
-    font-size:11px;font-weight:600;letter-spacing:1.5px;
-    margin-bottom:18px;width:fit-content;
-    text-transform:uppercase;
-  }
-  .slide-title{
-    font-size:60px;font-weight:800;line-height:1.05;
-    margin-bottom:16px;letter-spacing:-1px;
-    text-shadow:0 4px 20px rgba(0,0,0,0.6);
-  }
-  .slide-meta{
-    display:flex;gap:18px;align-items:center;
-    color:rgba(245,240,255,0.85);font-size:14px;font-weight:500;
-    margin-bottom:18px;
-  }
-  .slide-meta .score{color:#ffd700;font-weight:700}
-  .slide-meta .dot{width:4px;height:4px;border-radius:50%;background:var(--muted)}
-  .slide-desc{
-    font-size:16px;line-height:1.6;color:rgba(245,240,255,0.85);
-    margin-bottom:28px;max-width:600px;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-  }
-  .slide-actions{display:flex;gap:12px;flex-wrap:wrap}
-  .btn-primary, .btn-secondary{
-    border:none;cursor:pointer;font-weight:600;font-size:14px;
-    padding:13px 26px;border-radius:6px;
-    display:inline-flex;align-items:center;gap:8px;
-    transition:.2s;font-family:inherit;
-  }
-  .btn-primary{background:#fff;color:#0a0014}
-  .btn-primary:hover{background:rgba(255,255,255,0.8)}
-  .btn-secondary{
-    background:rgba(109,109,110,0.55);color:#fff;
-    backdrop-filter:blur(4px);
-  }
-  .btn-secondary:hover{background:rgba(109,109,110,0.4)}
-
-  .slider-dots{
-    position:absolute;bottom:90px;left:90px;z-index:3;
-    display:flex;gap:8px;
-    transition: opacity .3s ease;
-  }
-  .dot-btn{
-    width:30px;height:3px;border-radius:2px;
-    background:rgba(255,255,255,0.3);border:none;cursor:pointer;
-    transition:.3s;
-  }
-  .dot-btn.active{background:#fff;width:45px}
-  .slider-arrow{
-    position:absolute;top:50%;transform:translateY(-50%);
-    width:46px;height:46px;border-radius:50%;
-    background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);
-    color:#fff;cursor:pointer;z-index:3;
-    display:flex;align-items:center;justify-content:center;
-    transition:.2s;opacity:0;
-  }
-  .hero-wrapper:hover .slider-arrow{opacity:1}
-  .slider-arrow:hover{background:rgba(0,0,0,0.8);transform:translateY(-50%) scale(1.08)}
-  .slider-arrow.prev{left:60px}
-  .slider-arrow.next{right:80px}
-
-  .slider-toggle{
-    position:absolute;
-    left:0; top:50%; transform:translateY(-50%);
-    width:26px; height:72px;
-    background:linear-gradient(135deg, var(--violet), var(--violet-2));
-    border:none;
-    border-radius:0 12px 12px 0;
-    color:#fff;
-    cursor:pointer;
-    z-index:6;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:4px 0 18px rgba(138,43,226,0.55);
-    transition: width .25s ease, box-shadow .25s ease, background .25s ease;
-  }
-  .slider-toggle:hover{
-    width:32px;
-    box-shadow:4px 0 24px rgba(199,125,255,0.85);
-  }
-  .slider-toggle svg{
-    transition: transform .4s cubic-bezier(0.65,0,0.35,1);
-  }
-
-  .mini-title{
-    position:absolute;
-    left:60px; top:50%; transform:translateY(-50%);
-    z-index:3;
-    color:#fff;font-weight:700;font-size:14px;letter-spacing:.5px;
-    display:flex;align-items:center;gap:14px;
-    opacity:0;pointer-events:none;
-    transition: opacity .3s ease .1s;
-  }
-  .hero-slider.minimized ~ .mini-title{ opacity:1; }
-  .mini-title .mini-badge{
-    background:rgba(138,43,226,0.3);
-    border:1px solid rgba(138,43,226,0.5);
-    color:var(--violet-glow);
-    padding:3px 10px;border-radius:3px;
-    font-size:10px;letter-spacing:1.5px;
-  }
-
-  /* ---------- SECTIONS ---------- */
-  section{padding:40px 50px}
-  .section-title{
-    display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:20px;
-  }
-  .section-title h2{
-    font-size:22px;font-weight:700;letter-spacing:-0.3px;color:#fff;
-  }
-  .section-title h2::before{
-    content:'';display:inline-block;width:4px;height:22px;
-    background:linear-gradient(180deg,var(--violet-glow),var(--violet));
-    border-radius:2px;margin-right:12px;vertical-align:-4px;
-  }
-  .section-title .refresh{
-    color:var(--muted);font-size:12px;cursor:pointer;font-weight:500;
-    padding:7px 14px;border:1px solid var(--border);border-radius:20px;
-    transition:.2s;display:inline-flex;align-items:center;gap:6px;
-  }
-  .section-title .refresh:hover{background:var(--violet);color:#fff;border-color:var(--violet)}
-
-  .controls{display:grid;gap:18px;padding:0 50px}
-  .search-box{
-    display:flex;align-items:center;
-    background:rgba(255,255,255,0.04);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:4px 4px 4px 18px;
-    transition:.2s;
-  }
-  .search-box:focus-within{
-    border-color:var(--violet-2);
-    background:rgba(255,255,255,0.06);
-    box-shadow:0 0 0 3px rgba(138,43,226,0.12);
-  }
-  .search-box svg{flex-shrink:0;color:var(--muted)}
-  .search-box input{
-    flex:1;background:transparent;border:none;outline:none;
-    color:var(--text);font-size:14px;padding:14px 12px;font-family:inherit;
-  }
-  .search-box input::placeholder{color:var(--muted)}
-  .btn{
-    background:linear-gradient(90deg,var(--violet),var(--violet-2));
-    color:#fff;border:none;border-radius:8px;
-    padding:11px 22px;font-weight:600;cursor:pointer;
-    transition:.2s;font-size:13px;font-family:inherit;letter-spacing:.3px;
-  }
-  .btn:hover{box-shadow:0 6px 20px rgba(138,43,226,0.4)}
-
-  /* ---------- CAROUSEL ---------- */
-  .row{
-    display:flex;gap:10px;overflow-x:auto;
-    padding-bottom:14px;scroll-snap-type:x mandatory;scroll-behavior:smooth;
-  }
-  .card{
-    flex:0 0 200px;scroll-snap-align:start;
-    background:var(--card);border-radius:6px;overflow:hidden;
-    cursor:pointer;position:relative;
-    transition:transform .35s cubic-bezier(0.4,0,0.2,1),box-shadow .35s;
-  }
-  .card:hover{
-    transform:scale(1.08);
-    box-shadow:0 12px 40px rgba(0,0,0,0.7), 0 0 0 2px var(--violet-2);
-    z-index:5;
-  }
-  .card img{width:100%;height:285px;object-fit:cover;display:block;background:#1a0033}
-  .card-body{padding:12px 14px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.4))}
-  .card-title{
-    font-size:13px;font-weight:600;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;
-  }
-  .card-meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;font-weight:500}
-  .card-score{color:#ffd700;font-weight:700}
-  .card .badge{
-    position:absolute;top:10px;left:10px;
-    background:var(--violet);color:#fff;font-size:10px;font-weight:700;
-    padding:4px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:.8px;
-  }
-  .card .match-badge{
-    position:absolute;top:10px;right:10px;
-    background:linear-gradient(135deg, #00c853, #00e676);
-    color:#fff;font-size:11px;font-weight:800;
-    padding:5px 9px;border-radius:20px;
-    box-shadow:0 4px 12px rgba(0,200,83,0.4);
-    letter-spacing:.3px;
-  }
-  .card .match-badge.medium{
-    background:linear-gradient(135deg, #ff9800, #ffb74d);
-    box-shadow:0 4px 12px rgba(255,152,0,0.4);
-  }
-  .card .match-badge.low{
-    background:linear-gradient(135deg, #757575, #9e9e9e);
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
-  }
-  .nearest-notice{
-    background:linear-gradient(135deg, rgba(255,152,0,0.15), rgba(255,152,0,0.05));
-    border:1px solid rgba(255,152,0,0.4);
-    color:#ffb74d;
-    padding:12px 16px;border-radius:10px;
-    font-size:13px;font-weight:500;
-    margin-bottom:14px;
-    display:flex;align-items:center;gap:10px;
-  }
-
-  /* ---------- MODAL ---------- */
-  .modal-bg{
-    position:fixed;inset:0;background:rgba(0,0,0,.85);
-    display:none;align-items:center;justify-content:center;
-    z-index:1000;padding:20px;backdrop-filter:blur(8px);
-  }
-  .modal-bg.open{display:flex}
-  .modal{
-    background:var(--panel);border-radius:10px;
-    max-width:900px;width:100%;max-height:92vh;overflow-y:auto;
-    border:1px solid var(--border);position:relative;
-    box-shadow:0 25px 80px rgba(0,0,0,0.8);
-  }
-  .modal-close{
-    position:absolute;top:16px;right:16px;
-    width:36px;height:36px;border-radius:50%;
-    background:rgba(0,0,0,.7);border:none;color:#fff;cursor:pointer;
-    font-size:18px;display:flex;align-items:center;justify-content:center;z-index:5;
-    transition:.2s;
-  }
-  .modal-close:hover{background:#000;transform:rotate(90deg)}
-
-  .modal-poster{
-    position:relative;width:100%;
-    aspect-ratio:16/9;
-    background:#000;
-    overflow:hidden;
-  }
-  .modal-poster iframe{
-    position:absolute;inset:0;width:100%;height:100%;border:0;
-  }
-  .modal-poster .poster-fallback{
-    position:absolute;inset:0;
-    background-size:cover;background-position:center;
-  }
-  .modal-poster .poster-fallback::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(180deg,transparent 50%,rgba(21,0,46,0.6) 100%);
-  }
-  .modal-poster .no-video-label{
-    position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
-    background:rgba(0,0,0,0.7);color:var(--violet-glow);
-    padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;
-    border:1px solid var(--border);z-index:2;
-  }
-  .modal-body{padding:24px 36px 36px;position:relative;z-index:1}
-  .modal-body h2{font-size:32px;margin-bottom:8px;font-weight:800;letter-spacing:-0.5px}
-  .modal-subtitle{color:var(--muted);font-size:13px;margin-bottom:14px}
-  .modal-genres{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
-  .modal-genres span{
-    background:rgba(138,43,226,0.18);color:var(--violet-glow);
-    padding:5px 12px;border-radius:12px;font-size:11px;font-weight:500;
-    border:1px solid rgba(138,43,226,0.3);
-  }
-  .modal-stats{display:flex;flex-wrap:wrap;gap:24px;margin:18px 0;color:var(--muted);font-size:13px}
-  .modal-stats span{display:inline-flex;align-items:center;gap:6px}
-  .modal-stats b{color:var(--text);font-weight:600}
-  .modal-synopsis{line-height:1.7;color:rgba(245,240,255,0.85);margin:16px 0;font-size:14px}
-  .modal-watch-title{
-    margin-top:24px;color:#fff;font-size:14px;font-weight:600;
-    letter-spacing:.5px;text-transform:uppercase;
-  }
-  .stream-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .stream-links a{
-    padding:10px 18px;border-radius:6px;font-weight:600;font-size:12px;
-    transition:.2s;border:1px solid var(--border);
-    background:rgba(255,255,255,0.04);letter-spacing:.3px;
-  }
-  .stream-links a:hover{transform:translateY(-2px)}
-  .stream-links a.cr{background:#f47521;border-color:#f47521;color:#fff}
-  .stream-links a.nf{background:#e50914;border-color:#e50914;color:#fff}
-  .stream-links a.hd{background:#00a8e1;border-color:#00a8e1;color:#fff}
-  .stream-links a.yt{background:#ff0000;border-color:#ff0000;color:#fff}
-
-  .loader{text-align:center;padding:40px;color:var(--muted);width:100%}
-  .spinner{
-    display:inline-block;width:28px;height:28px;
-    border:3px solid rgba(138,43,226,0.2);
-    border-top-color:var(--violet-2);
-    border-radius:50%;animation:spin .8s linear infinite;
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  .ai-result{
-    background:linear-gradient(135deg,rgba(138,43,226,0.12),rgba(177,74,255,0.04));
-    border:1px solid rgba(138,43,226,0.3);
-    border-radius:10px;padding:18px 20px;margin-top:14px;display:none;
-  }
-  .ai-result.show{display:block}
-  .ai-result h3{color:var(--violet-glow);margin-bottom:6px;font-size:14px;font-weight:600}
-  .ai-result p{color:var(--muted);font-size:13px}
-
-  /* ---------- RESPONSIVE QUERIES ---------- */
-  @media(max-width:1100px){
-    :root{
-      --ai-panel-width: 70vw;
-      --ai-panel-mini-width: 26vw;
-    }
-  }
-
-  /* MOBILE OPTIMIZATIONS */
-  @media(max-width:768px){
-    :root{
-      --ai-panel-width: 100vw;
-      --ai-panel-mini-width: 0px; /* Hide sidebar completely when inactive */
-      --grip-width: 24px;
-    }
-    
-    body.ai-expanded { overflow: hidden; } /* Lock scroll behind panel */
-    nav { right: 0 !important; }
-    body.ai-expanded nav { transform: translateY(-100%); } /* Hide nav when panel is open */
-
-    nav, nav.scrolled{padding:14px 16px}
-    .nav-links a:not(.ai-trigger){display:none}
-    
-    /* Hero Adjustments */
-    .hero-slider{height:60vh;min-height:450px}
-    .slide::before{
-      background: linear-gradient(180deg, rgba(10,0,20,0.3) 0%, rgba(10,0,20,0.85) 60%, var(--bg) 100%);
-    }
-    .slide-content{padding:0 20px; text-align: center; align-items: center; max-width:100%}
-    .slide-badge{margin: 0 auto 14px;}
-    .slide-title{font-size:28px}
-    .slide-desc{font-size:13px; -webkit-line-clamp: 4;}
-    .slide-meta{justify-content: center; flex-wrap: wrap;}
-    .slide-actions{justify-content: center; width: 100%;}
-    
-    .slider-dots{left:50%;bottom:20px; transform: translateX(-50%);}
-    .slider-arrow, .slider-toggle, .mini-title {display:none !important}
-    
-    /* Card & List Layouts */
-    section{padding:30px 16px}
-    .controls{padding:0 16px}
-    .card{flex:0 0 130px}
-    .card img{height:185px}
-    .card-title{font-size: 12px;}
-    
-    /* Search Box */
-    .search-box input {font-size: 14px; padding: 12px;}
-    .btn {padding: 10px 16px; font-size: 12px;}
-    
-    /* Modal Fullscreen */
-    .modal-bg {padding: 0;}
-    .modal {max-height: 100vh; height: 100vh; border-radius: 0; display: flex; flex-direction: column;}
-    .modal-close {top: 12px; right: 12px; background: rgba(0,0,0,0.6);}
-    .modal-body {padding: 20px; overflow-y: auto; flex: 1;}
-    .modal-body h2 {font-size: 24px;}
-    .modal-stats {gap: 12px; font-size: 12px;}
-    
-    /* AI Panel Mobile Layout */
-    .ai-panel.expanded .ai-panel-header{padding: 20px 20px 16px;}
-    .ai-panel.expanded .ai-panel-body{padding: 16px 20px;}
-    .ai-panel.expanded .selection-bar{padding: 16px 20px 20px;}
-    .ai-panel.expanded .ai-panel-header-text h2{font-size: 20px;}
-    .mobile-close-ai {display: block; background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 4px;}
-    
-    .ai-panel.expanded .big-prompt {padding: 10px 12px; flex-direction: row; border-radius: 16px; margin-bottom: 20px; min-height: 54px;}
-    .ai-panel.expanded .big-prompt .prompt-icon {display: none;}
-    .ai-panel.expanded .big-prompt input {font-size: 14px; padding: 10px 4px;}
-    .ai-panel.expanded .big-prompt .btn-find {padding: 12px 20px; font-size: 13px;}
-    
-    .ai-panel.expanded .tab {padding: 8px 12px; font-size: 12px;}
-    .ai-panel.expanded .tab .jp {font-size: 9px;}
-  }
-
-  footer{
-    text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;
-    border-top:1px solid var(--border);margin-top:40px;
-  }
-  footer a{color:var(--violet-glow)}
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav id="nav">
-  <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">ANIMUSE</div>
-  <div class="nav-links">
-    <a href="#trending">Trending</a>
-    <a href="#classics">Classics</a>
-    <a href="#genres">Genres</a>
-    <a class="ai-trigger" onclick="expandAiPanel()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-      AI Search
-    </a>
-  </div>
-</nav>
-
-<!-- AI PANEL (always visible — minimized at 20vw by default, expands to ~52vw on toggle) -->
-<aside class="ai-panel expanded" id="ai-panel">
-
-  <!-- LEFT-EDGE GRIP / SLIDE BAR (click to toggle) -->
-  <div class="ai-grip" id="ai-grip" onclick="toggleAiPanel(event)" title="Slide to open / close">
-    <div class="ai-grip-chev">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-    </div>
-    <div class="ai-grip-lines">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-    <div class="ai-grip-chev">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-    </div>
-  </div>
-
-  <div class="ai-panel-content">
-    <div class="ai-panel-header">
-      <div class="ai-panel-header-text">
-        <h2>AI Anime Discovery</h2>
-        <p>Describe your mood and pick genres to find your perfect anime</p>
-      </div>
-      <button class="mobile-close-ai" onclick="collapseAiPanel()">✕</button>
-    </div>
-
-    <div class="ai-panel-body">
-      <!-- FAT AI SEARCH BAR -->
-      <div class="big-prompt">
-        <div class="prompt-icon">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-        </div>
-        <input id="ai-prompt" type="text" placeholder="Describe your perfect anime…"/>
-        <button class="btn-find" onclick="runAiSearch()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-          <span class="btn-find-label">Find</span>
-        </button>
-      </div>
-      <div class="prompt-hint">
-        <span>💡 Try: "dark psychological mystery"</span>
-        <span class="hint-extra" style="margin-left:auto">Press <kbd>Enter</kbd> to search</span>
-      </div>
-
-      <div class="category-block">
-        <div class="category-label">Genres</div>
-        <div class="tab-group" id="tabs-genres"></div>
-      </div>
-    </div>
-
-    <div class="selection-bar">
-      <div class="selection-info">
-        <span><b id="selection-count">0</b> selected</span>
-        <button class="clear-btn" onclick="clearSelections()">Clear</button>
-      </div>
-      <button class="apply-btn" onclick="runAiSearch()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        <span class="apply-btn-label-short">Discover</span>
-        <span class="apply-btn-label-long">Discover Anime</span>
-      </button>
-    </div>
-  </div>
-</aside>
-
-<!-- HERO SLIDESHOW -->
-<div class="hero-wrapper">
-  <div class="hero-slider" id="hero-slider">
-    <div class="slides" id="slides">
-      <div class="loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><div class="spinner"></div></div>
-    </div>
-    <button class="slider-arrow prev" onclick="changeSlide(-1)" aria-label="Previous">
-      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <button class="slider-arrow next" onclick="changeSlide(1)" aria-label="Next">
-      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6 6-6"/></svg>
-    </button>
-    <div class="slider-dots" id="slider-dots"></div>
-  </div>
-
-  <button class="slider-toggle" id="slider-toggle" onclick="toggleSlider()" aria-label="Toggle slider" title="Minimize / Expand slider">
-    <svg id="slider-toggle-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
-  </button>
-
-  <div class="mini-title" id="mini-title"></div>
-</div>
-
-<!-- TRENDING -->
-<section id="trending">
-  <div class="section-title">
-    <h2>Trending Now</h2>
-    <span class="refresh" onclick="loadTrending(true)">
-      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-      Refresh
-    </span>
-  </div>
-  <div class="row" id="trending-row"><div class="loader"><div class="spinner"></div></div></div>
-</section>
-
-<!-- SEARCH -->
-<div class="controls" id="search">
-  <div class="section-title" style="margin-bottom:0">
-    <h2>Search</h2>
-  </div>
-  <div class="search-box">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input id="search-input" type="text" placeholder="Search any anime by name…"/>
-    <button class="btn" onclick="doSearch()">Search</button>
-  </div>
-  <div class="ai-result" id="ai-result"></div>
-  <div id="nearest-notice-container"></div>
-  <div class="row" id="search-row" style="margin-top:6px"></div>
-</div>
-
-<!-- CLASSICS -->
-<section id="classics" style="margin-top:20px">
-  <div class="section-title"><h2>All-Time Favorites</h2></div>
-  <div class="row" id="classics-row"><div class="loader"><div class="spinner"></div></div></div>
-</section>
-
-<!-- GENRES -->
-<section id="genres">
-  <div class="section-title"><h2>Browse by Genre</h2></div>
-  <div id="genre-container"></div>
-</section>
-
-<footer>
-  AniMuse · Powered by <a href="https://jikan.moe" target="_blank">Jikan API</a> &amp; MyAnimeList · Trailers via YouTube
-</footer>
-
-<!-- MODAL -->
-<div class="modal-bg" id="modal-bg" onclick="if(event.target.id==='modal-bg')closeModal()">
-  <div class="modal" id="modal"></div>
-</div>
-
-<script>
-const API = 'https://api.jikan.moe/v4';
-const wait = ms => new Promise(r => setTimeout(r, ms));
-
-const GENRES = [
-  {label:'Action',        jp:'アクション',     ids:[1]},
-  {label:'Adventure',     jp:'アドベンチャー', ids:[2]},
-  {label:'Comedy',        jp:'コメディ',       ids:[4]},
-  {label:'Cyberpunk',     jp:'サイバーパンク', ids:[24,29]},
-  {label:'Drama',         jp:'ドラマ',         ids:[8]},
-  {label:'Fantasy',       jp:'ファンタジー',   ids:[10]},
-  {label:'Harem',         jp:'ハーレム',       ids:[35]},
-  {label:'Historical',    jp:'歴史',           ids:[13]},
-  {label:'Horror',        jp:'ホラー',         ids:[14]},
-  {label:'Isekai',        jp:'異世界',         ids:[62]},
-  {label:'Josei',         jp:'女性',           ids:[43]},
-  {label:'Mecha',         jp:'メカ',           ids:[18]},
-  {label:'Military',      jp:'ミリタリー',     ids:[38]},
-  {label:'Music',         jp:'音楽',           ids:[19]},
-  {label:'Mystery',       jp:'ミステリー',     ids:[7]},
-  {label:'Parody',        jp:'パロディ',       ids:[20]},
-  {label:'Psychological', jp:'心理的',         ids:[40]},
-  {label:'Romance',       jp:'恋愛',           ids:[22]},
-  {label:'Samurai',       jp:'侍',             ids:[21]},
-  {label:'School',        jp:'学園',           ids:[23]},
-  {label:'Sci-Fi',        jp:'SF',             ids:[24]},
-  {label:'Seinen',        jp:'青年',           ids:[42]},
-  {label:'Shoujo',        jp:'少女',           ids:[25]},
-  {label:'Shounen',       jp:'少年',           ids:[27]},
-  {label:'Slice of Life', jp:'日常',           ids:[36]},
-  {label:'Space',         jp:'宇宙',           ids:[29]},
-  {label:'Sports',        jp:'スポーツ',       ids:[30]},
-  {label:'Supernatural',  jp:'超自然',         ids:[37]},
-  {label:'Thriller',      jp:'スリラー',       ids:[41]},
-  {label:'Vampire',       jp:'吸血鬼',         ids:[32]},
-];
-
-const GENRE_ROWS = ['Action','Isekai','Romance','Fantasy','Shounen','Mystery','Slice of Life','Sci-Fi','Psychological','Mecha'];
-
-let selectedTabs = new Set();
-
-function streamLinks(title, trailerUrl){
-  const q = encodeURIComponent(title);
-  const ytQuery = encodeURIComponent(title + ' anime trailer');
-  return `
-    <a href="https://www.crunchyroll.com/search?q=${q}" target="_blank" rel="noopener" class="cr">Crunchyroll</a>
-    <a href="https://www.netflix.com/search?q=${q}" target="_blank" rel="noopener" class="nf">Netflix</a>
-    <a href="https://www.hidive.com/search?q=${q}" target="_blank" rel="noopener" class="hd">HiDive</a>
-    <a href="https://www.funimation.com/search/?keywords=${q}" target="_blank" rel="noopener">Funimation</a>
-    <a href="https://myanimelist.net/anime.php?q=${q}" target="_blank" rel="noopener">MyAnimeList</a>
-    <a href="${trailerUrl || 'https://www.youtube.com/results?search_query='+ytQuery}" target="_blank" rel="noopener" class="yt">▶ YouTube</a>
-  `;
-}
-
-function cardHTML(a, badge='', matchPct=null){
-  const img = a.images?.jpg?.large_image_url || a.images?.jpg?.image_url || '';
-  const year = a.year || (a.aired?.from ? new Date(a.aired.from).getFullYear() : '—');
-  const score = a.score ? a.score.toFixed(1) : 'N/A';
-  let matchHTML = '';
-  if(matchPct !== null){
-    const cls = matchPct >= 75 ? '' : matchPct >= 40 ? 'medium' : 'low';
-    matchHTML = `<div class="match-badge ${cls}">${matchPct}% match</div>`;
-  }
-  return `
-    <div class="card" onclick="openAnime(${a.mal_id})">
-      ${badge ? `<div class="badge">${badge}</div>` : ''}
-      ${matchHTML}
-      <img loading="lazy" src="${img}" alt="${a.title}"/>
-      <div class="card-body">
-        <div class="card-title">${a.title}</div>
-        <div class="card-meta">
-          <span>${year}</span>
-          <span class="card-score">★ ${score}</span>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderRow(containerId, list, badge=''){
-  const el = document.getElementById(containerId);
-  if(!list || list.length===0){ el.innerHTML = '<p style="color:var(--muted);padding:20px">Nothing found.</p>'; return; }
-  el.innerHTML = list.map(a => cardHTML(a, badge)).join('');
-}
-
-function renderRowWithMatch(containerId, list){
-  const el = document.getElementById(containerId);
-  if(!list || list.length===0){ el.innerHTML = '<p style="color:var(--muted);padding:20px">Nothing found.</p>'; return; }
-  el.innerHTML = list.map(a => cardHTML(a, '', a._matchPct)).join('');
-}
-
-async function fetchJSON(url, retries=2){
-  for(let i=0;i<=retries;i++){
-    try{
-      const r = await fetch(url);
-      if(r.status === 429){ await wait(1200); continue; }
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return await r.json();
-    }catch(e){
-      if(i===retries) throw e;
-      await wait(800);
-    }
-  }
-}
-
-function youtubeId(url){
-  if(!url) return null;
-  try{
-    const u = new URL(url);
-    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
-    if(u.searchParams.get('v')) return u.searchParams.get('v');
-    if(u.pathname.includes('/embed/')) return u.pathname.split('/embed/')[1];
-  }catch(e){
-    const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/);
-    if(m) return m[1];
-  }
-  return null;
-}
-function youtubeEmbed(url){
-  const id = youtubeId(url);
-  return id ? `https://www.youtube.com/embed/${id}` : null;
-}
-
-function buildTabs(){
-  document.getElementById('tabs-genres').innerHTML = GENRES.map((g,i) =>
-    `<span class="tab" data-idx="${i}" onclick="toggleTab(this,${i})">
-       ${g.label} <span class="jp">${g.jp}</span>
-     </span>`
-  ).join('');
-}
-
-function syncTabUI(idx){
-  const tab = document.querySelector(`.tab[data-idx="${idx}"]`);
-  if(selectedTabs.has(idx)){
-    tab?.classList.add('active');
-  } else {
-    tab?.classList.remove('active');
-  }
-  document.getElementById('selection-count').textContent = selectedTabs.size;
-}
-
-function toggleTab(el, idx){
-  if(selectedTabs.has(idx)) selectedTabs.delete(idx);
-  else selectedTabs.add(idx);
-  syncTabUI(idx);
-}
-function clearSelections(){
-  const idxs = [...selectedTabs];
-  selectedTabs.clear();
-  idxs.forEach(i => syncTabUI(i));
-}
-
-function toggleAiPanel(ev){
-  if(ev) ev.stopPropagation();
-  const panel = document.getElementById('ai-panel');
-  if(panel.classList.contains('expanded')) collapseAiPanel();
-  else expandAiPanel();
-}
-function expandAiPanel(){
-  const panel = document.getElementById('ai-panel');
-  if(panel.classList.contains('expanded')) return;
-  panel.classList.add('expanded');
-  document.body.classList.add('ai-expanded');
-  // Auto-focus logic: avoid auto-focus on mobile to prevent keyboard pop-up right away
-  if(window.innerWidth > 768) {
-    setTimeout(()=>document.getElementById('ai-prompt')?.focus(),420);
-  }
-}
-function collapseAiPanel(){
-  const panel = document.getElementById('ai-panel');
-  if(!panel.classList.contains('expanded')) return;
-  panel.classList.remove('expanded');
-  document.body.classList.remove('ai-expanded');
-  if(document.activeElement && panel.contains(document.activeElement)){
-    document.activeElement.blur();
-  }
-}
-
-function resolveSelection(prompt){
-  const requirements = [];
-  const labels = [];
-  for(const idx of selectedTabs){
-    const g = GENRES[idx];
-    requirements.push(g.ids);
-    labels.push(g.label);
-  }
-  if(prompt){
-    const hits = parsePrompt(prompt);
-    hits.forEach(h => {
-      requirements.push(h.ids);
-      labels.push(h.label);
-    });
-  }
-  return {requirements, labels};
-}
-
-function parsePrompt(text){
-  const t = text.toLowerCase();
-  const map = [
-    {kw:['sad','cry','emotional','tragic','tear','melanchol'], label:'Drama',         ids:[8]},
-    {kw:['romance','love','romantic'],             label:'Romance',       ids:[22]},
-    {kw:['isekai','another world','reincarn'],     label:'Isekai',        ids:[62]},
-    {kw:['action','fight','battle','epic'],        label:'Action',        ids:[1]},
-    {kw:['funny','comedy','laugh','hilarious'],    label:'Comedy',        ids:[4]},
-    {kw:['fantasy','magic','wizard','dragon'],     label:'Fantasy',       ids:[10]},
-    {kw:['sci-fi','scifi','future'],               label:'Sci-Fi',        ids:[24]},
-    {kw:['space','galaxy','stars'],                label:'Space',         ids:[29]},
-    {kw:['cyber','cyberpunk'],                     label:'Cyberpunk',     ids:[24,29]},
-    {kw:['horror','scary','creepy'],               label:'Horror',        ids:[14]},
-    {kw:['mystery','detective'],                   label:'Mystery',       ids:[7]},
-    {kw:['thriller','suspense'],                   label:'Thriller',      ids:[41]},
-    {kw:['slice','chill','relax','cozy','peace'],  label:'Slice of Life', ids:[36]},
-    {kw:['mecha','robot','gundam'],                label:'Mecha',         ids:[18]},
-    {kw:['music','idol','band','song'],            label:'Music',         ids:[19]},
-    {kw:['sport','athlete'],                       label:'Sports',        ids:[30]},
-    {kw:['supernatural','ghost','spirit'],         label:'Supernatural',  ids:[37]},
-    {kw:['psycho','philos','deep'],                label:'Psychological', ids:[40]},
-    {kw:['shounen'],                               label:'Shounen',       ids:[27]},
-    {kw:['shoujo','shojo'],                        label:'Shoujo',        ids:[25]},
-    {kw:['seinen'],                                label:'Seinen',        ids:[42]},
-    {kw:['josei'],                                 label:'Josei',         ids:[43]},
-    {kw:['adventure','journey','explor'],          label:'Adventure',     ids:[2]},
-    {kw:['samurai','swordsman','katana'],          label:'Samurai',       ids:[21]},
-    {kw:['school','classroom','student'],          label:'School',        ids:[23]},
-    {kw:['military','soldier','war'],              label:'Military',      ids:[38]},
-    {kw:['history','historical','ancient'],        label:'Historical',    ids:[13]},
-    {kw:['vampire','blood','dracula'],             label:'Vampire',       ids:[32]},
-    {kw:['harem'],                                 label:'Harem',         ids:[35]},
-    {kw:['parody','satire'],                       label:'Parody',        ids:[20]},
-  ];
-  const hits = [];
-  for(const r of map) if(r.kw.some(k => t.includes(k))) hits.push(r);
-  return hits;
-}
-
-async function runAiSearch(){
-  const prompt = document.getElementById('ai-prompt').value.trim();
-  const {requirements, labels} = resolveSelection(prompt);
-
-  if(requirements.length === 0 && !prompt){
-    alert('Pick at least one category or type a prompt');
-    return;
-  }
-
-  const aiEl = document.getElementById('ai-result');
-  const noticeEl = document.getElementById('nearest-notice-container');
-  noticeEl.innerHTML = '';
-
-  if(requirements.length === 0 && prompt){
-    aiEl.innerHTML = `<h3>Searching by title</h3><p>No mood detected — searching for "${prompt}"</p>`;
-    aiEl.classList.add('show');
-    document.getElementById('search-input').value = prompt;
-    document.getElementById('search').scrollIntoView({behavior:'smooth', block:'start'});
-    return doSearch();
-  }
-
-  aiEl.innerHTML = `<h3>AI Matched: ${labels.join(' · ')}</h3>
-    <p>Calculating best matches${prompt?` · "${prompt}"`:''}…</p>`;
-  aiEl.classList.add('show');
-
-  const row = document.getElementById('search-row');
-  row.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-  document.getElementById('search').scrollIntoView({behavior:'smooth', block:'start'});
-
-  try{
-    const allCandidates = new Map();
-    const queries = [];
-    const allIds = [...new Set(requirements.flat())];
-    queries.push(`${API}/anime?genres=${allIds.join(',')}&order_by=score&sort=desc&limit=25&min_score=6`);
-
-    for(const req of requirements){
-      queries.push(`${API}/anime?genres=${req.join(',')}&order_by=score&sort=desc&limit=15&min_score=6.5`);
-    }
-
-    for(let i = 0; i < queries.length; i++){
-      try{
-        const data = await fetchJSON(queries[i]);
-        (data.data || []).forEach(a => {
-          if(!allCandidates.has(a.mal_id)) allCandidates.set(a.mal_id, a);
-        });
-      }catch(e){ }
-      if(i < queries.length - 1) await wait(400);
-    }
-
-    const totalReqs = requirements.length;
-    const scored = [];
-    for(const anime of allCandidates.values()){
-      const animeGenreIds = new Set([
-        ...(anime.genres||[]).map(g=>g.mal_id),
-        ...(anime.themes||[]).map(g=>g.mal_id),
-        ...(anime.demographics||[]).map(g=>g.mal_id),
-        ...(anime.explicit_genres||[]).map(g=>g.mal_id),
-      ]);
-      let matchedReqs = 0;
-      for(const req of requirements){
-        if(req.some(id => animeGenreIds.has(id))) matchedReqs++;
-      }
-      const pct = totalReqs > 0 ? Math.round((matchedReqs / totalReqs) * 100) : 0;
-      const scoreBonus = (anime.score || 0) / 100;
-      anime._matchPct = pct;
-      anime._sortScore = pct + scoreBonus;
-      scored.push(anime);
-    }
-
-    scored.sort((a,b) => b._sortScore - a._sortScore);
-
-    const perfectMatches = scored.filter(a => a._matchPct === 100);
-    const nearMatches = scored.filter(a => a._matchPct < 100 && a._matchPct > 0);
-
-    let resultList;
-    let isNearest = false;
-
-    if(perfectMatches.length >= 3){
-      resultList = perfectMatches.slice(0, 24);
-    } else if(perfectMatches.length > 0){
-      resultList = [...perfectMatches, ...nearMatches.slice(0, 24 - perfectMatches.length)];
-      isNearest = nearMatches.length > 0;
-    } else {
-      resultList = nearMatches.slice(0, 24);
-      isNearest = true;
-    }
-
-    if(resultList.length === 0){
-      row.innerHTML = '<p style="color:var(--muted);padding:20px">No matches found. Try different categories.</p>';
-      aiEl.innerHTML = `<h3>No matches</h3><p>Try fewer or different genres.</p>`;
-      return;
-    }
-
-    aiEl.innerHTML = `<h3>AI Matched: ${labels.join(' · ')}</h3>
-      <p>Found <b style="color:var(--violet-glow)">${resultList.length}</b> anime${prompt?` · "${prompt}"`:''} · ranked by match %</p>`;
-
-    if(isNearest && perfectMatches.length === 0){
-      noticeEl.innerHTML = `
-        <div class="nearest-notice">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          <span>No exact match for all <b>${totalReqs}</b> selected categories. Showing nearest matches that include some of your genres.</span>
-        </div>
-      `;
-    } else if(isNearest){
-      noticeEl.innerHTML = `
-        <div class="nearest-notice">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          <span>Found <b>${perfectMatches.length}</b> perfect match${perfectMatches.length===1?'':'es'}. Showing additional nearest matches too.</span>
-        </div>
-      `;
-    }
-
-    renderRowWithMatch('search-row', resultList);
-    
-    // Automatically close panel on mobile after search to show results
-    if(window.innerWidth <= 768) collapseAiPanel();
-
-  }catch(e){
-    row.innerHTML = '<p style="color:var(--danger);padding:20px">AI search failed. Try again.</p>';
-  }
-}
-
-let slideData = [];
-let currentSlide = 0;
-let slideInterval = null;
-let sliderMinimized = false;
-
-async function loadHeroSlides(){
-  try{
-    const data = await fetchJSON(`${API}/top/anime?filter=airing&limit=6`);
-    slideData = data.data;
-    renderSlides();
-    startSlideshow();
-  }catch(e){
-    document.getElementById('slides').innerHTML = '<p style="color:var(--muted);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">Failed to load.</p>';
-  }
-}
-
-function renderSlides(){
-  const container = document.getElementById('slides');
-  const dots = document.getElementById('slider-dots');
-  container.innerHTML = slideData.map((a, i) => {
-    const img = a.images?.jpg?.large_image_url || '';
-    const year = a.year || (a.aired?.from ? new Date(a.aired.from).getFullYear() : '');
-    const score = a.score ? a.score.toFixed(1) : 'N/A';
-    const eps = a.episodes ? `${a.episodes} eps` : 'Ongoing';
-    const synopsis = (a.synopsis || '').slice(0, 220) + ((a.synopsis||'').length > 220 ? '…' : '');
-    return `
-      <div class="slide ${i===0?'active':''}" style="background-image:url('${img}')">
-        <div class="slide-content">
-          <span class="slide-badge">Trending #${i+1}</span>
-          <h1 class="slide-title">${a.title}</h1>
-          <div class="slide-meta">
-            <span class="score">★ ${score}</span>
-            <span class="dot"></span>
-            <span>${year}</span>
-            <span class="dot"></span>
-            <span>${eps}</span>
-            <span class="dot"></span>
-            <span>${a.type || 'TV'}</span>
-          </div>
-          <p class="slide-desc">${synopsis}</p>
-          <div class="slide-actions">
-            <button class="btn-primary" onclick="openAnime(${a.mal_id})">
-              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              Watch Info
-            </button>
-            <button class="btn-secondary" onclick="openAnime(${a.mal_id})">
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-              More Info
-            </button>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-  dots.innerHTML = slideData.map((_, i) => `<button class="dot-btn ${i===0?'active':''}" onclick="goToSlide(${i})"></button>`).join('');
-  updateMiniTitle();
-}
-
-function updateMiniTitle(){
-  const el = document.getElementById('mini-title');
-  if(!slideData.length) return;
-  const a = slideData[currentSlide];
-  el.innerHTML = `<span class="mini-badge">TRENDING #${currentSlide+1}</span> <span>${a.title}</span>`;
-}
-
-function goToSlide(idx){
-  const slides = document.querySelectorAll('.slide');
-  const dots = document.querySelectorAll('.dot-btn');
-  slides[currentSlide]?.classList.remove('active');
-  dots[currentSlide]?.classList.remove('active');
-  currentSlide = (idx + slideData.length) % slideData.length;
-  slides[currentSlide]?.classList.add('active');
-  dots[currentSlide]?.classList.add('active');
-  updateMiniTitle();
-}
-function changeSlide(dir){ goToSlide(currentSlide + dir); restartSlideshow(); }
-function startSlideshow(){ slideInterval = setInterval(() => goToSlide(currentSlide + 1), 6000); }
-function restartSlideshow(){ clearInterval(slideInterval); startSlideshow(); }
-
-function toggleSlider(){
-  sliderMinimized = !sliderMinimized;
-  const slider = document.getElementById('hero-slider');
-  const icon = document.getElementById('slider-toggle-icon');
-  if(sliderMinimized){
-    slider.classList.add('minimized');
-    icon.style.transform = 'rotate(180deg)';
-    clearInterval(slideInterval);
-  } else {
-    slider.classList.remove('minimized');
-    icon.style.transform = 'rotate(0deg)';
-    startSlideshow();
-  }
-}
-
-async function loadTrending(force=false){
-  if(force) document.getElementById('trending-row').innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-  try{
-    const data = await fetchJSON(`${API}/top/anime?filter=airing&limit=20`);
-    renderRow('trending-row', data.data, 'Hot');
-  }catch(e){
-    document.getElementById('trending-row').innerHTML = '<p style="color:var(--danger);padding:20px">Failed to load.</p>';
-  }
-}
-async function loadClassics(){
-  try{
-    const data = await fetchJSON(`${API}/top/anime?filter=bypopularity&limit=20`);
-    renderRow('classics-row', data.data, 'Classic');
-  }catch(e){
-    document.getElementById('classics-row').innerHTML = '<p style="color:var(--danger);padding:20px">Failed to load.</p>';
-  }
-}
-async function loadGenres(){
-  const container = document.getElementById('genre-container');
-  container.innerHTML = '';
-  for(const name of GENRE_ROWS){
-    const g = GENRES.find(x => x.label === name);
-    if(!g) continue;
-    const rowId = `genre-${g.ids[0]}`;
-    container.insertAdjacentHTML('beforeend', `
-      <div class="section-title" style="margin-top:30px"><h2>${g.label} <span style="color:var(--muted);font-size:13px;font-weight:400;margin-left:6px">${g.jp}</span></h2></div>
-      <div class="row" id="${rowId}"><div class="loader"><div class="spinner"></div></div></div>
-    `);
-    try{
-      await wait(450);
-      const data = await fetchJSON(`${API}/anime?genres=${g.ids.join(',')}&order_by=score&sort=desc&limit=15&min_score=7`);
-      renderRow(rowId, data.data);
-    }catch(e){
-      document.getElementById(rowId).innerHTML = '<p style="color:var(--muted);padding:10px">Couldn\'t load.</p>';
-    }
-  }
-}
-
-async function doSearch(){
-  const q = document.getElementById('search-input').value.trim();
-  if(!q) return;
-  const row = document.getElementById('search-row');
-  document.getElementById('nearest-notice-container').innerHTML = '';
-  row.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-  try{
-    const data = await fetchJSON(`${API}/anime?q=${encodeURIComponent(q)}&order_by=score&sort=desc&limit=20`);
-    renderRow('search-row', data.data);
-    row.scrollIntoView({behavior:'smooth', block:'start'});
-  }catch(e){
-    row.innerHTML = '<p style="color:var(--danger);padding:20px">Search failed.</p>';
-  }
-}
-
-document.addEventListener('keydown', e=>{
-  if(e.key==='Enter' && document.activeElement.id==='search-input') doSearch();
-  if(e.key==='Enter' && document.activeElement.id==='ai-prompt') runAiSearch();
-  if(e.key==='Escape'){
-    if(document.getElementById('ai-panel').classList.contains('expanded')) collapseAiPanel();
-    else closeModal();
-  }
-  if(e.key==='ArrowLeft' && slideData.length && !document.getElementById('ai-panel').classList.contains('expanded')) changeSlide(-1);
-  if(e.key==='ArrowRight' && slideData.length && !document.getElementById('ai-panel').classList.contains('expanded')) changeSlide(1);
-});
-
-async function openAnime(id){
-  const bg = document.getElementById('modal-bg');
-  const m  = document.getElementById('modal');
-  bg.classList.add('open');
-  m.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-  try{
-    const {data:a} = await fetchJSON(`${API}/anime/${id}/full`);
-    const img = a.images?.jpg?.large_image_url || '';
-    const genres = (a.genres||[]).concat(a.themes||[]).map(g=>`<span>${g.name}</span>`).join('');
-    const trailerEmbed = youtubeEmbed(a.trailer?.url || a.trailer?.embed_url);
-    const ytFallback = `https://www.youtube.com/results?search_query=${encodeURIComponent(a.title+' anime trailer')}`;
-    const trailerUrl = a.trailer?.url || ytFallback;
-
-    const posterSection = trailerEmbed
-      ? `<div class="modal-poster">
-           <iframe src="${trailerEmbed}?autoplay=1&mute=1&rel=0&modestbranding=1&loop=1&playlist=${youtubeId(a.trailer?.url || a.trailer?.embed_url)}"
-             title="${a.title} trailer"
-             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-             allowfullscreen></iframe>
-         </div>`
-      : `<div class="modal-poster">
-           <div class="poster-fallback" style="background-image:url('${img}')"></div>
-           <div class="no-video-label">▶ No trailer available — <a href="${ytFallback}" target="_blank" style="color:#fff;text-decoration:underline">search YouTube</a></div>
-         </div>`;
-
-    m.innerHTML = `
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      ${posterSection}
-      <div class="modal-body">
-        <h2>${a.title}</h2>
-        <div class="modal-subtitle">${a.title_english && a.title_english!==a.title ? a.title_english+' · ' : ''}${a.title_japanese||''}</div>
-        <div class="modal-stats">
-          <span><b style="color:#ffd700">★ ${a.score||'N/A'}</b></span>
-          <span><b>${a.episodes||'?'}</b> episodes</span>
-          <span><b>${a.year||(a.aired?.from?new Date(a.aired.from).getFullYear():'—')}</b></span>
-          <span><b>${a.type||'—'}</b></span>
-          <span>Rank <b>#${a.rank||'—'}</b></span>
-        </div>
-        <div class="modal-genres">${genres}</div>
-        <p class="modal-synopsis">${(a.synopsis||'No synopsis available.').slice(0,600)}${(a.synopsis||'').length>600?'…':''}</p>
-
-        <div class="modal-watch-title">Where to watch</div>
-        <div class="stream-links">${streamLinks(a.title, trailerUrl)}</div>
-      </div>
-    `;
-  }catch(e){
-    m.innerHTML = '<div style="padding:40px;text-align:center"><button class="modal-close" onclick="closeModal()">✕</button><p>Failed to load details.</p></div>';
-  }
-}
-
-function closeModal(){
-  const m = document.getElementById('modal');
-  document.getElementById('modal-bg').classList.remove('open');
-  setTimeout(()=>{ m.innerHTML = ''; }, 300);
-}
-
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('nav');
-  if(window.scrollY > 50) nav.classList.add('scrolled');
-  else nav.classList.remove('scrolled');
-});
-
-/* ----------- CLICK INSIDE = OPEN, CLICK OUTSIDE = CLOSE ----------- */
-document.addEventListener('click', (e) => {
-  const panel = document.getElementById('ai-panel');
-  const grip  = document.getElementById('ai-grip');
-  const modalOpen = document.getElementById('modal-bg').classList.contains('open');
-
-  // Ignore clicks while modal is open
-  if(modalOpen) return;
-
-  // Grip handles its own toggle — don't double-trigger
-  if(grip && grip.contains(e.target)) return;
-
-  // Click inside panel -> expand
-  if(panel.contains(e.target)){
-    expandAiPanel();
-  } else {
-    // Click anywhere outside panel -> collapse
-    collapseAiPanel();
-  }
-});
-
-async function init(){
-  buildTabs();
-  
-  // UX logic: Start expanded on desktop, but start minimized on mobile to let them see the site first
   if(window.innerWidth > 768){
     document.body.classList.add('ai-expanded');
   } else {
@@ -3105,5 +1629,3 @@ setInterval(()=>loadTrending(true), 10*60*1000);
 </script>
 </body>
 </html>
-
-```
